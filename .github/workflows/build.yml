@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # हमने गिटहब का डिप्रिकेटेड टूल हटाकर सीधे गिट क्लोन मार दिया ताकि एरर की छुट्टी हो जाए
-    - name: Clone Source Code Manually
-      run: |
-        git clone https://github.com/${{ github.repository }}.git .
-        git checkout ${{ github.ref_name }}
+    # गिटहब का ऑफीशियल नोड 24 रेडी तरीका जो बिना एरर के कोड उठाएगा
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: .
 
     - name: Install System Compilers and Tools
       run: |
