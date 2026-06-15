@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install ISO Building Tools
         run: |
@@ -16,7 +16,7 @@ jobs:
         run: bash build_ibut_os.sh
 
       - name: Upload Finished ISO File
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Ibut_OS_Core_R1_ISO
           path: /tmp/Ibut_OS_Core_R1.iso
