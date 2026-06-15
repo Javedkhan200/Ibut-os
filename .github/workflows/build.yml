@@ -3,16 +3,18 @@ name: Build R1 Light Edition OS
 on:
   workflow_dispatch:
 
+env:
+  # गिटहब के नोड एरर को पूरी तरह ब्लॉक करने का सीक्रेट कोड:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'false'
+
 jobs:
   build-os:
     runs-on: ubuntu-latest
 
     steps:
-    # गिटहब का ऑफीशियल नोड 24 रेडी तरीका जो बिना एरर के कोड उठाएगा
     - name: Checkout Source Code
       uses: actions/checkout@v4
-      with:
-        sparse-checkout: .
 
     - name: Install System Compilers and Tools
       run: |
