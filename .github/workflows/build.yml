@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
 
 env:
-  # गिटहब के नोड एरर को पूरी तरह ब्लॉक करने का सीक्रेट कोड:
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'false'
 
@@ -31,8 +30,9 @@ jobs:
     - name: Create Hybrid Bootable ISO (Legacy MBR + UEFI Fix)
       run: |
         echo "Generating Bootable ISO File..."
+        # env मॉड्यूल हटा दिया ताकि i386-pc का एरर हमेशा के लिए खत्म हो जाए:
         grub-mkrescue -o r1_light_edition.iso iso_root/ \
-          --modules="biosdisk part_msdos part_gpt fat ext2 normal chain boot env" \
+          --modules="biosdisk part_msdos part_gpt fat ext2 normal chain boot" \
           -d /usr/lib/grub/i386-pc
 
     - name: Upload Finished Full Ibut OS ISO
