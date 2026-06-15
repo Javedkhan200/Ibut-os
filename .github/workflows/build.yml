@@ -1,24 +1,42 @@
-name: Compile Ibut OS ISO
-on: [push]
+name: Build R1 Light Edition OS
+
+on:
+  workflow_dispatch: # Isse tum manually button daba kar build start kar sakte ho
+
 jobs:
-  build_iso:
+  build-os:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Source Code
+      uses: actions/checkout@v3
 
-      - name: Set Up Linux Live Kit Dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y xorriso squashfs-tools wget debootstrap cpio
+    - name: Install All Bootloaders and Build Tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc build-essential libncurses-dev libssl-dev libelf-dev xorriso mtools grub-pc-bin grub-efi-amd64-bin squashfs-tools
 
-      - name: Build Professional Hybrid OS Structures
-        run: |
-          chmod +x build_ibut_os.sh
-          sudo ./build_ibut_os.sh
+    - name: Configure and Build Linux Kernel
+      run: |
+        echo "Building Core Kernel..."
+        # Yahan par tumhare kernel build ki commands aayengi
+        # Hum generic x86_64 light config use kar rahe hain
+        mkdir -p iso_root/boot/grub
 
-      - name: Upload Finished ISO File
-        uses: actions/upload-artifact@v4
-        with:
-          name: Ibut_OS_Core_R1_ISO
-          path: /tmp/Ibut_OS_Core_R1.iso
+    - name: Setup Multi-Boot GRUB (MBR + UEFI Support)
+      run: |
+        # Dono modules ko ek saath environment mein ready karna
+        sudo cp -r /usr/lib/grub/i386-pc iso_root/boot/grub/ || true
+        sudo cp -r /usr/lib/grub/x86_64-efi iso_root/boot/grub/ || true
+
+    - name: Create Hybrid Bootable ISO (Legacy MBR Fix)
+      run: |
+        grub-mkrescue -o r1_light_edition.iso iso_root/ \
+          --modules="biosdisk part_msdos part_gpt fat ext2 normal chain boot" \
+          -d /usr/lib/grub/i386-pc
+
+    - name: Upload Finished R1 OS ISO
+      uses: actions/upload-artifact@v3
+      with:
+        name: R1-Light-Edition-ISO
+        path: r1_light_edition.iso
