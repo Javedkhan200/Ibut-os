@@ -33,9 +33,8 @@ jobs:
         mkdir -p iso_root/apps
         mkdir -p iso_root/system/gui
         
-        # 2. Kernel Setup (फेल-प्रूफ लाइव कर्नल डाउनलोडर)
+        # 2. Kernel Setup (initrd एरर फिक्स के साथ)
         echo "Finding and downloading the absolute real kernel package..."
-        # यह कमांड सिस्टम से असली कर्नल का सटीक नाम खुद ढूंढ कर डाउनलोड करेगी
         KERNEL_PKG=$(apt-cache search linux-image-[0-9] | grep generic | head -n 1 | awk '{print $1}')
         echo "Selected Kernel Package: $KERNEL_PKG"
         sudo apt-get download $KERNEL_PKG -y
@@ -43,9 +42,8 @@ jobs:
         mkdir -p kernel_tmp
         sudo dpkg-deb -x linux-image-*.deb kernel_tmp/
         
-        # असली कर्नल और इनिटआरडी को सही जगह कॉपी करना
+        # सिर्फ कर्नल फाइल को कॉपी करना (क्योंकि इस पैकेज में यही होती है)
         sudo cp kernel_tmp/boot/vmlinuz-* iso_root/boot/vmlinuz
-        sudo cp kernel_tmp/boot/initrd.img-* iso_root/boot/initrd.img
         sudo rm -rf kernel_tmp *.deb
         
         # 3. Brave Browser Inject करना (Direct Download)
