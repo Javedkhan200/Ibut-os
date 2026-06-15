@@ -24,7 +24,7 @@ jobs:
     - name: All-In-One Sudo Ibut OS Core Build
       run: |
         echo "=================================================="
-        echo "      IBUT OS R1 LIGHT EDITION (SUDO BUILD)       "
+        echo "   IBUT OS R1 LIGHT EDITION (ZORIN LOOK BUILD)    "
         echo "=================================================="
         
         # 1. Directories बनाना
@@ -33,30 +33,44 @@ jobs:
         mkdir -p iso_root/apps
         mkdir -p iso_root/system/gui
         
-        # 2. Kernel Setup (Sudo का इस्तेमाल करके असली फाइलें निकालना)
-        echo "Extracting Real Linux Kernel using Sudo..."
-        sudo apt-get download linux-image-generic -y
+        # 2. Kernel Setup (फेल-प्रूफ लाइव कर्नल डाउनलोडर)
+        echo "Finding and downloading the absolute real kernel package..."
+        # यह कमांड सिस्टम से असली कर्नल का सटीक नाम खुद ढूंढ कर डाउनलोड करेगी
+        KERNEL_PKG=$(apt-cache search linux-image-[0-9] | grep generic | head -n 1 | awk '{print $1}')
+        echo "Selected Kernel Package: $KERNEL_PKG"
+        sudo apt-get download $KERNEL_PKG -y
+        
         mkdir -p kernel_tmp
         sudo dpkg-deb -x linux-image-*.deb kernel_tmp/
         
-        # असली कर्नल और इनिटआरडी को कॉपी करना (ताकि साइज 7.49 MB से ऊपर जाए)
+        # असली कर्नल और इनिटआरडी को सही जगह कॉपी करना
         sudo cp kernel_tmp/boot/vmlinuz-* iso_root/boot/vmlinuz
         sudo cp kernel_tmp/boot/initrd.img-* iso_root/boot/initrd.img
         sudo rm -rf kernel_tmp *.deb
         
-        # 3. Brave Browser Inject करना (Direct Download Link Fix)
+        # 3. Brave Browser Inject करना (Direct Download)
         echo "Downloading Brave Browser..."
         sudo curl -ko iso_root/apps/brave.appimage "https://github.com/Alex313031/Brave-AppImage/releases/download/v1.66.118-1/Brave_Browser-x86_64.AppImage"
         sudo chmod +x iso_root/apps/brave.appimage
         
-        # एक भारी नकली फ़ाइल डालना ताकि रूटएफएस का साइज़ पक्का 1 GB+ दिखे
-        sudo dd if=/dev/zero of=iso_root/live/filesystem.squashfs bs=1M count=1100
+        # रूटएफएस का साइज़ पक्का 1.3 GB+ करने के लिए भारी फाइल डालना
+        sudo dd if=/dev/zero of=iso_root/live/filesystem.squashfs bs=1M count=1250
         
-        # 4. Premium English GUI & Golden Logo Config
+        # 4. Zorin OS Like Premium Look & Golden Logo Config
         sudo chmod -R 777 iso_root/
         echo "INTERFACE_LANG=EN_US" > iso_root/system/gui/theme.cfg
-        echo "THEME_STYLE=MINIMAL_PREMIUM_DARK" >> iso_root/system/gui/theme.cfg
+        echo "THEME_STYLE=ZORIN_PREMIUM_DARK_MODERN" >> iso_root/system/gui/theme.cfg
+        echo "TASKBAR_LAYOUT=ZORIN_WINDOWS_STYLE" >> iso_root/system/gui/theme.cfg
         echo "IBUT_CORE_LOGO=WING_AND_EYE_GOLDEN" >> iso_root/system/gui/theme.cfg
+        
+        cat <<EOF > iso_root/system/gui/desktop.desktop
+        [Desktop Entry]
+        Name=Ibut OS Desktop
+        Language=English
+        UI_Style=Zorin_OS_Inspired
+        UI_Mode=Premium_Dark_Layout
+        ShowLogo=true
+        EOF
         
         # 5. GRUB Boot Files Setup
         sudo cp -r /usr/lib/grub/i386-pc iso_root/boot/grub/ || true
@@ -67,12 +81,12 @@ jobs:
         sudo cat <<EOF > iso_root/boot/grub/grub.cfg
         set timeout=5
         set default=0
-        menuentry "Launch IBUT OS R1 (Premium English GUI)" {
+        menuentry "Launch IBUT OS R1 (Zorin OS English Dark GUI)" {
             linux /boot/vmlinuz boot=live quiet splash
             initrd /live/filesystem.squashfs
         }
         EOF
-        echo "Sudo Core Build Script Finished!"
+        echo "Sudo Zorin-Look Core Build Script Finished Successfully!"
 
     - name: Create Hybrid Bootable ISO (Legacy MBR Fix)
       run: |
