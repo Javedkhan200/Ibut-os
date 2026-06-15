@@ -1,0 +1,22 @@
+name: Compile Ibut OS ISO
+on: [push]
+jobs:
+  build_iso:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install ISO Building Tools
+        run: |
+          sudo apt update
+          sudo apt install -y xorriso squashfs-tools
+
+      - name: Run Ibut Engine Script
+        run: bash build_ibut_os.sh
+
+      - name: Upload Finished ISO File
+        uses: actions/upload-artifact@v3
+        with:
+          name: Ibut_OS_Core_R1_ISO
+          path: /tmp/Ibut_OS_Core_R1.iso
