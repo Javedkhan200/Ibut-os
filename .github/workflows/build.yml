@@ -7,13 +7,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install ISO Building Tools
+      - name: Set Up Linux Live Kit Dependencies
         run: |
           sudo apt update
-          sudo apt install -y xorriso squashfs-tools
+          sudo apt install -y xorriso squashfs-tools wget debootstrap cpio
 
-      - name: Run Ibut Engine Script
-        run: bash build_ibut_os.sh
+      - name: Build Professional Hybrid OS Structures
+        run: |
+          chmod +x build_ibut_os.sh
+          sudo ./build_ibut_os.sh
 
       - name: Upload Finished ISO File
         uses: actions/upload-artifact@v4
