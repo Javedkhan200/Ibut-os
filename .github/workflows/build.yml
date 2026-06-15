@@ -3,17 +3,16 @@ name: Build R1 Light Edition OS
 on:
   workflow_dispatch:
 
-env:
-  # गिटहब के 2026 के नए रूल्स के मुताबिक Node 24 को ज़बरदस्ती चालू करना ताकि एरर न आए:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 jobs:
   build-os:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Source Code
-      uses: actions/checkout@v4
+    # हमने गिटहब का डिप्रिकेटेड टूल हटाकर सीधे गिट क्लोन मार दिया ताकि एरर की छुट्टी हो जाए
+    - name: Clone Source Code Manually
+      run: |
+        git clone https://github.com/${{ github.repository }}.git .
+        git checkout ${{ github.ref_name }}
 
     - name: Install System Compilers and Tools
       run: |
