@@ -3,6 +3,10 @@ name: Build R1 Light Edition OS
 on:
   workflow_dispatch:
 
+env:
+  # गिटहब के 2026 के नए रूल्स के मुताबिक Node 24 को ज़बरदस्ती चालू करना ताकि एरर न आए:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 jobs:
   build-os:
     runs-on: ubuntu-latest
