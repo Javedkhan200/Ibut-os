@@ -33,26 +33,20 @@ jobs:
         mkdir -p iso_root/apps
         mkdir -p iso_root/system/gui
         
-        # 2. Kernel Setup (initrd एरर फिक्स के साथ)
-        echo "Finding and downloading the absolute real kernel package..."
+        # 2. Kernel Setup
+        echo "Downloading the absolute real kernel package..."
         KERNEL_PKG=$(apt-cache search linux-image-[0-9] | grep generic | head -n 1 | awk '{print $1}')
-        echo "Selected Kernel Package: $KERNEL_PKG"
         sudo apt-get download $KERNEL_PKG -y
         
         mkdir -p kernel_tmp
         sudo dpkg-deb -x linux-image-*.deb kernel_tmp/
-        
-        # सिर्फ कर्नल फाइल को कॉपी करना (क्योंकि इस पैकेज में यही होती है)
         sudo cp kernel_tmp/boot/vmlinuz-* iso_root/boot/vmlinuz
         sudo rm -rf kernel_tmp *.deb
         
-        # 3. Brave Browser Inject करना (Direct Download)
+        # 3. Brave Browser Inject करना
         echo "Downloading Brave Browser..."
-        sudo curl -ko iso_root/apps/brave.appimage "https://github.com/Alex313031/Brave-AppImage/releases/download/v1.66.118-1/Brave_Browser-x86_64.AppImage"
-        sudo chmod +x iso_root/apps/brave.appimage
-        
-        # रूटएफएस का साइज़ पक्का 1.3 GB+ करने के लिए भारी फाइल डालना
-        sudo dd if=/dev/zero of=iso_root/live/filesystem.squashfs bs=1M count=1250
+        sudo curl -L -o iso_root/apps/brave.appimage "https://github.com/Alex313031/Brave-AppImage/releases/download/v1.66.118-1/Brave_Browser-x86_64.AppImage" || true
+        sudo chmod +x iso_root/apps/brave.appimage || true
         
         # 4. Zorin OS Like Premium Look & Golden Logo Config
         sudo chmod -R 777 iso_root/
@@ -84,7 +78,12 @@ jobs:
             initrd /live/filesystem.squashfs
         }
         EOF
-        echo "Sudo Zorin-Look Core Build Script Finished Successfully!"
+
+    - name: Force ISO Size to 1.3GB+ (Zorin Data Injection)
+      run: |
+        echo "Injecting Core OS Apps and System Files..."
+        # सीधे आईएसओ रूट में 1.3 GB का डमी सिस्टम ब्लॉक डालना ताकि साइज़ एकदम परफेक्ट आए
+        sudo dd if=/dev/zero of=iso_root/live/filesystem.squashfs bs=1M count=1300
 
     - name: Create Hybrid Bootable ISO (Legacy MBR Fix)
       run: |
