@@ -11,62 +11,27 @@ jobs:
     - name: Checkout Source Code
       uses: actions/checkout@v4
 
-    - name: Update Apt and Install Packages
+    - name: Install System Compilers and Tools
       run: |
         sudo apt-get update -y
-        sudo apt-get install -y bc build-essential libncurses-dev libssl-dev libelf-dev xorriso mtools squashfs-tools wget curl
+        sudo apt-get install -y bc build-essential libncurses-dev libssl-dev libelf-dev xorriso mtools squashfs-tools wget curl git
         sudo apt-get install -y grub-pc-bin grub-efi-amd64 -y
 
-    - name: Create OS Directory Structure
+    - name: Run Master Ibut OS Core Build
       run: |
-        mkdir -p iso_root/boot/grub
-        mkdir -p iso_root/apps
+        echo "Starting complete core build script..."
+        chmod +x build_ibut_os.sh
+        ./build_ibut_os.sh
 
-    - name: Download and Add Brave Browser
+    - name: Create Hybrid Bootable ISO (Legacy MBR + UEFI Fix)
       run: |
-        echo "Downloading Brave Browser for Ibut OS..."
-        # Brave Browser का कड़क ऐप इमेज डाउनलोड करके ऐप्स में डालना
-        curl -LC - https://github.com/Alex313031/Brave-AppImage/releases/download/v1.66.118-1/Brave_Browser-x86_64.AppImage -o iso_root/apps/brave.appimage
-        chmod +x iso_root/apps/brave.appimage
-
-    - name: Run Main Ibut OS Script
-      run: |
-        echo "Executing build_ibut_os.sh..."
-        # स्क्रिप्ट को ढूंढना और रन करना
-        if [ -f "build_ibut_os.sh" ]; then
-          chmod +x build_ibut_os.sh
-          ./build_ibut_os.sh || true
-        elif [ -f ".github/workflows/build_ibut_os.sh" ]; then
-          chmod +x .github/workflows/build_ibut_os.sh
-          ./.github/workflows/build_ibut_os.sh || true
-        fi
-
-    - name: Force Fix 7.49MB Size Error
-      run: |
-        echo "Ensuring Full OS Files are Packed..."
-        # अगर स्क्रिप्ट फेल भी हो, तो भी यह सिस्टम को ज़बरदस्ती असली फाइलें लोड करने पर मजबूर करेगा
-        if [ ! -f "iso_root/boot/vmlinuz" ]; then
-          echo "Injecting Core Kernel into Boot..."
-          echo "IBUT OS CORE" > iso_root/boot/vmlinuz
-          echo "IBUT OS INITRD" > iso_root/boot/initrd.img
-        fi
-        echo "Ibut OS Premium English Interface Enabled" > iso_root/version.txt
-
-    - name: Setup Multi-Boot GRUB (MBR + UEFI Support)
-      run: |
-        sudo cp -r /usr/lib/grub/i386-pc iso_root/boot/grub/ || true
-        if [ -d "/usr/lib/grub/x86_64-efi" ]; then
-          sudo cp -r /usr/lib/grub/x86_64-efi iso_root/boot/grub/ || true
-        fi
-
-    - name: Create Hybrid Bootable ISO (Legacy MBR Fix)
-      run: |
+        echo "Generating Bootable ISO File..."
         grub-mkrescue -o r1_light_edition.iso iso_root/ \
-          --modules="biosdisk part_msdos part_gpt fat ext2 normal chain boot" \
+          --modules="biosdisk part_msdos part_gpt fat ext2 normal chain boot env" \
           -d /usr/lib/grub/i386-pc
 
-    - name: Upload Finished R1 OS ISO
+    - name: Upload Finished Full Ibut OS ISO
       uses: actions/upload-artifact@v4
       with:
-        name: R1-Light-Edition-ISO
+        name: IBUT-OS-R1-PREMIUM
         path: r1_light_edition.iso
